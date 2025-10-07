@@ -1,5 +1,3 @@
-using System;
-
 namespace VendingMachine.Domain.Entities;
 
 /// <summary>

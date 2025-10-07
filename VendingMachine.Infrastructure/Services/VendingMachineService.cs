@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using VendingMachine.Application.Services;
 using VendingMachine.Domain.Entities;
 
@@ -40,6 +37,12 @@ public sealed class VendingMachineService : VendingMachineServiceBase
     }
 
     /// <inheritdoc />
+    public override decimal GetInsertedAmount()
+    {
+        return _paymentService.GetInsertedAmount();
+    }
+
+    /// <inheritdoc />
     public override TransactionResultBase Purchase(string productId)
     {
         var insertedAmount = _paymentService.GetInsertedAmount();
@@ -61,13 +64,19 @@ public sealed class VendingMachineService : VendingMachineServiceBase
             return new TransactionResult(false, "Недостаточно средств.", null, Array.Empty<CoinBase>());
         }
 
+        var changeAmount = insertedAmount - slot.Product.Price;
+        
+        if (changeAmount > 0 && !_paymentService.CanMakeChange(changeAmount))
+        {
+            return new TransactionResult(false, "Недостаточно монет для сдачи.", null, _paymentService.CancelTransaction());
+        }
+        
         var dispensedSlot = _inventoryService.TryDispense(productId);
         if (dispensedSlot is null)
         {
             return new TransactionResult(false, "Не удалось выдать товар.", null, Array.Empty<CoinBase>());
         }
-
-        var changeAmount = insertedAmount - slot.Product.Price;
+        
         var change = _paymentService.MakeChange(changeAmount);
         if (changeAmount > 0 && change.Count == 0)
         {

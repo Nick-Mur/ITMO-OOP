@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using VendingMachine.Domain.Entities;
 
 namespace VendingMachine.Application.Services;
@@ -45,4 +44,10 @@ public abstract class VendingMachineServiceBase
     /// </summary>
     /// <returns>Монеты, которые были собраны.</returns>
     public abstract IReadOnlyCollection<CoinBase> CollectFunds();
+    
+    /// <summary>
+    ///     Возвращает текущую внесённую (но ещё не зафиксированную) сумму пользователя.
+    /// </summary>
+    /// <returns>Сумма внесённых монет в рамках текущей транзакции.</returns>
+    public abstract decimal GetInsertedAmount();
 }

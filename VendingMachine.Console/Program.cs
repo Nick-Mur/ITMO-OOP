@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using System.Globalization;
 using VendingMachine.Domain.Entities;
 using VendingMachine.Infrastructure.Services;
@@ -32,11 +30,12 @@ while (isRunning)
     Console.WriteLine("=== Торговый автомат ===");
     Console.WriteLine("1. Показать товары");
     Console.WriteLine("2. Внести монету");
-    Console.WriteLine("3. Купить товар");
-    Console.WriteLine("4. Отменить операцию");
-    Console.WriteLine("5. Админ: Пополнить товар");
-    Console.WriteLine("6. Админ: Забрать средства");
-    Console.WriteLine("7. Выход");
+    Console.WriteLine("3. Показать внесённую сумму");
+    Console.WriteLine("4. Купить товар");
+    Console.WriteLine("5. Отменить операцию");
+    Console.WriteLine("6. Админ: Пополнить товар");
+    Console.WriteLine("7. Админ: Забрать средства");
+    Console.WriteLine("8. Выход");
     Console.Write("Выберите пункт меню: ");
 
     var choice = Console.ReadLine();
@@ -51,18 +50,21 @@ while (isRunning)
             InsertCoin();
             break;
         case "3":
-            PurchaseProduct();
+            ShowInsertedAmount();
             break;
         case "4":
-            CancelTransaction();
+            PurchaseProduct();
             break;
         case "5":
-            RestockProduct();
+            CancelTransaction();
             break;
         case "6":
-            CollectFunds();
+            RestockProduct();
             break;
         case "7":
+            CollectFunds();
+            break;
+        case "8":
             isRunning = false;
             break;
         default:
@@ -77,8 +79,7 @@ void DisplayProducts()
     Console.WriteLine("Товары:");
     foreach (var slot in products)
     {
-        Console.WriteLine(
-            $"{slot.Product.Id}: {slot.Product.Name} - {slot.Product.Price.ToString("C", CultureInfo.CurrentCulture)} (Кол-во: {slot.Quantity})");
+        Console.WriteLine($"{slot.Product.Id}: {slot.Product.Name} - {slot.Product.Price.ToString("C", CultureInfo.CurrentCulture)} (Кол-во: {slot.Quantity})");
     }
 }
 
@@ -89,11 +90,20 @@ void InsertCoin()
     {
         vendingMachine.InsertCoin(new Coin(value));
         Console.WriteLine($"Внесено {value.ToString("C", CultureInfo.CurrentCulture)}");
+        Console.WriteLine($"Текущая сумма: {vendingMachine.GetInsertedAmount().ToString("C", CultureInfo.CurrentCulture)}");
     }
     else
     {
         Console.WriteLine("Некорректный номинал монеты.");
     }
+}
+
+void ShowInsertedAmount()
+{
+    var amount = vendingMachine.GetInsertedAmount();
+    Console.WriteLine(amount == 0
+        ? "Вы ещё не внесли монеты."
+        : $"Внесённая сумма: {amount.ToString("C", CultureInfo.CurrentCulture)}");
 }
 
 void PurchaseProduct()
@@ -155,34 +165,34 @@ void RestockProduct()
     Console.Write("Введите название товара: ");
     var name = Console.ReadLine() ?? string.Empty;
     Console.Write("Введите цену: ");
-    if (!decimal.TryParse(Console.ReadLine(), NumberStyles.Number, CultureInfo.InvariantCulture, out var price))
+    if (!decimal.TryParse(Console.ReadLine(), NumberStyles.Number, CultureInfo.InvariantCulture, out var price) || price <= 0)
     {
         Console.WriteLine("Некорректная цена.");
         return;
     }
 
     Console.Write("Введите количество: ");
-    if (!int.TryParse(Console.ReadLine(), out var quantity))
+    if (!int.TryParse(Console.ReadLine(), out var qty) || qty < 0)
     {
         Console.WriteLine("Некорректное количество.");
         return;
     }
 
-    vendingMachine.Restock(new Product(id, name, price), quantity);
-    Console.WriteLine("Товар пополнен.");
+    vendingMachine.Restock(new Product(id, name, price), qty);
+    Console.WriteLine("Товар добавлен / пополнен.");
 }
 
 void CollectFunds()
 {
-    var coins = vendingMachine.CollectFunds();
-    if (coins.Count == 0)
+    var funds = vendingMachine.CollectFunds();
+    if (funds.Count == 0)
     {
-        Console.WriteLine("Нет средств для сбора.");
+        Console.WriteLine("Средств нет.");
         return;
     }
 
-    Console.WriteLine("Собранные монеты:");
-    foreach (var coin in coins)
+    Console.WriteLine("Изъяты монеты:");
+    foreach (var coin in funds)
     {
         Console.WriteLine(coin.Value.ToString("C", CultureInfo.CurrentCulture));
     }

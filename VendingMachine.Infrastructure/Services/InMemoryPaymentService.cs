@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using VendingMachine.Application.Services;
 using VendingMachine.Domain.Entities;
 
@@ -33,6 +30,34 @@ public sealed class InMemoryPaymentService : PaymentServiceBase
     public override decimal GetInsertedAmount()
     {
         return _currentTransactionCoins.Sum(coin => coin.Value);
+    }
+
+    /// <summary>
+    ///     Проверяет, может ли автомат сформировать сдачу.
+    /// </summary>
+    /// <param name="amount">Требуемая сумма сдачи.</param>
+    /// <returns>true — если сдача возможна; иначе false.</returns>
+    public bool CanMakeChange(decimal amount)
+    {
+        if (amount <= 0)
+        {
+            return true;
+        }
+
+        // Попытка Выдать сдачу
+        var withdrawn = _machineWallet.Withdraw(amount).ToList();
+        if (withdrawn.Count == 0)
+        {
+            return false;
+        }
+
+        // Возвращаем монеты обратно
+        foreach (var coin in withdrawn)
+        {
+            _machineWallet.AddCoin(coin);
+        }
+
+        return true;
     }
 
     /// <inheritdoc />
