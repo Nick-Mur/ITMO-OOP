@@ -1,5 +1,6 @@
 namespace LAB3.OrdersSystem.Operations;
 using Order.Core;
+using Patterns.Strategy;
 
 public class OrdersSystemTypeChanger(List<Order> items)
 {
@@ -13,6 +14,16 @@ public class OrdersSystemTypeChanger(List<Order> items)
         ArgumentException.ThrowIfNullOrWhiteSpace(newType, nameof(newType));
 
         order.OrderType = newType;
+        
+        // Update strategy based on type
+        if (newType == "Fast")
+        {
+            order.SetPriceStrategy(new FastDeliveryPriceStrategy());
+        }
+        else
+        {
+            order.SetPriceStrategy(new StandardPriceStrategy());
+        }
     }
 
     public void ChangeTypeForMultiple(IEnumerable<Order> orders, string newType)
@@ -21,10 +32,7 @@ public class OrdersSystemTypeChanger(List<Order> items)
 
         foreach (var order in orders)
         {
-            if (!_items.Contains(order))
-                throw new InvalidOperationException("Один из заказов не найден в системе.");
-
-            order.OrderType = newType;
+            ChangeType(order, newType);
         }
     }
 }

@@ -1,5 +1,6 @@
 namespace LAB3.OrdersSystem.Operations;
 using Order.Core;
+using Patterns.State;
 
 public class OrdersSystemStatusChanger(List<Order> items)
 {
@@ -12,7 +13,28 @@ public class OrdersSystemStatusChanger(List<Order> items)
 
         ArgumentException.ThrowIfNullOrWhiteSpace(newStatus, nameof(newStatus));
 
-        order.OrderStatus = newStatus;
+        // Map string to state
+        // This is a simple factory logic inside the operation
+        switch (newStatus)
+        {
+            case "New":
+                order.SetState(new NewState());
+                break;
+            case "Cooking":
+                order.SetState(new CookingState());
+                break;
+            case "Delivery":
+                order.SetState(new DeliveryState());
+                break;
+            case "Completed":
+                order.SetState(new CompletedState());
+                break;
+            case "Cancelled":
+                order.SetState(new CancelledState());
+                break;
+            default:
+                throw new ArgumentException($"Unknown status: {newStatus}");
+        }
     }
 
     public void ChangeStatusForMultiple(IEnumerable<Order> orders, string newStatus)
@@ -21,10 +43,7 @@ public class OrdersSystemStatusChanger(List<Order> items)
 
         foreach (var order in orders)
         {
-            if (!_items.Contains(order))
-                throw new InvalidOperationException("Один из заказов не найден в системе.");
-
-            order.OrderStatus = newStatus;
+            ChangeStatus(order, newStatus);
         }
     }
 }

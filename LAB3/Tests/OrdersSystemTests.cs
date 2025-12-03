@@ -138,4 +138,19 @@ public class OrdersSystemTests
 
         Assert.Equal(800, total);
     }
+    [Fact]
+    public void Builder_ShouldCreateOrderCorrectly()
+    {
+        var builder = new LAB3.Patterns.Builder.OrderBuilder(_menu);
+        var order = builder
+            .SetType("Fast")
+            .AddDish("Pizza", 2)
+            .Build();
+
+        _ordersSystem.Add(order);
+
+        Assert.Equal("Fast", order.OrderType);
+        Assert.Equal(2, order.Items["Pizza"]);
+        Assert.Equal(1100, _ordersSystem.GetTotalPrice(order, _menu));
+    }
 }

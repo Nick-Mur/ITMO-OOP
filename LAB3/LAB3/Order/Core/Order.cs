@@ -1,26 +1,82 @@
 ﻿namespace LAB3.Order.Core;
 using Operations;
 using LAB3.Menu.Core;
+using Patterns.Strategy;
+using Patterns.State;
+using Patterns.Observer;
 
 public class Order : OrderStorage
 {
     private readonly OrderAdder _adder;
     private readonly OrderRemover _remover;
-    private readonly OrderTotalPriceGetter _totalPriceGetter;
+    
+    private IPriceCalculationStrategy _priceStrategy;
+    private IOrderState _state;
+    private readonly List<IOrderObserver> _observers = new();
 
     public string OrderType { get; set; }
-    public string OrderStatus {get; set;}
+
+    public string OrderStatus => _state.GetStatusName();
+
+    public IOrderState State => _state;
 
     public Order(string orderType = "basic")
     {
         OrderType = orderType;
-        OrderStatus = "Готовится";
+
+        if (orderType == "Fast")
+            _priceStrategy = new FastDeliveryPriceStrategy();
+        else
+            _priceStrategy = new StandardPriceStrategy();
+            
+        _state = new NewState();
 
         _adder = new OrderAdder(_items);
         _remover = new OrderRemover(_items);
-        _totalPriceGetter = new OrderTotalPriceGetter(_items);
     }
     
+    // Strategy Methods
+    public void SetPriceStrategy(IPriceCalculationStrategy strategy)
+    {
+        _priceStrategy = strategy;
+    }
+
+    // State Methods
+    public void SetState(IOrderState state)
+    {
+        _state = state;
+        NotifyObservers();
+    }
+
+    public void NextState()
+    {
+        _state.Next(this);
+    }
+
+    public void Cancel()
+    {
+        _state.Cancel(this);
+    }
+
+    // Observer Methods
+    public void Attach(IOrderObserver observer)
+    {
+        _observers.Add(observer);
+    }
+
+    public void Detach(IOrderObserver observer)
+    {
+        _observers.Remove(observer);
+    }
+
+    private void NotifyObservers()
+    {
+        foreach (var observer in _observers)
+        {
+            observer.Update(this);
+        }
+    }
+
     public void AddByName(string dishName, Menu menu, int quantity = 1) 
         => _adder.AddByName(dishName, menu, quantity);
     
@@ -39,6 +95,6 @@ public class Order : OrderStorage
 
     public void Clear() => _remover.Clear();
 
-    // Получение общей цены заказа
-    public int GetTotalPrice(Menu menu) => _totalPriceGetter.GetTotalPrice(OrderType, menu);
+    // Получение общей цены заказа через стратегию
+    public int GetTotalPrice(Menu menu) => _priceStrategy.CalculatePrice(this, menu);
 }
