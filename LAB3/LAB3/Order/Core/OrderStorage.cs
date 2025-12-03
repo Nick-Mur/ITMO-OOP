@@ -2,6 +2,6 @@
 
 public abstract class OrderStorage
 {
-    protected readonly List<string> _items = new();
-    public IReadOnlyList<string> Items => _items;
+    protected readonly Dictionary<string, int> _items = new();
+    public IReadOnlyDictionary<string, int> Items => _items;
 }

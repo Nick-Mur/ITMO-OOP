@@ -1,35 +1,44 @@
 ﻿namespace LAB3.Order.Core;
-using Objects;
 using Operations;
 using LAB3.Menu.Core;
-
 
 public class Order : OrderStorage
 {
     private readonly OrderAdder _adder;
-    private readonly DishRemover _remover;
-    private readonly DishTotalPriceGetter _totalPriceGetter;
+    private readonly OrderRemover _remover;
+    private readonly OrderTotalPriceGetter _totalPriceGetter;
 
     public string OrderType { get; set; }
+    public string OrderStatus {get; set;}
 
     public Order(string orderType)
     {
         OrderType = orderType;
+        OrderStatus = "Готовится";
 
         _adder = new OrderAdder(_items);
-        _remover = new DishRemover(_items);
-        _totalPriceGetter = new DishTotalPriceGetter(_items);
+        _remover = new OrderRemover(_items);
+        _totalPriceGetter = new OrderTotalPriceGetter(_items);
     }
+    
+    public void AddByName(string dishName, Menu menu, int quantity = 1) 
+        => _adder.AddByName(dishName, menu, quantity);
+    
+    public void AddRangeByName(IEnumerable<string> dishNames, Menu menu, int quantity = 1) 
+        => _adder.AddRangeByName(dishNames, menu, quantity);
 
-    public void Add(Dish item) => _adder.Add(item);
-    public void AddRange(IEnumerable<Dish> items) => _adder.AddRange(items);
+    // Удаление блюд по имени с указанием количества
+    public void RemoveByName(string dishName, int quantity = 1) 
+        => _remover.RemoveByName(dishName, quantity);
+    
+    public void RemoveCompletelyByName(string dishName) 
+        => _remover.RemoveCompletelyByName(dishName);
+    
+    public void RemoveRangeByName(IEnumerable<string> dishNames, int quantity = 1) 
+        => _remover.RemoveRangeByName(dishNames, quantity);
 
-    public void Remove(Dish item) => _remover.Remove(item);
-    public void RemoveRange(IEnumerable<Dish> items) => _remover.RemoveRange(items);
+    public void Clear() => _remover.Clear();
 
-    public int GetTotalPrice() => _totalPriceGetter.GetTotalPrice(OrderType);
-
-    public void AddByName(string dishName, Menu.Core.Menu menu) => _adder.AddByName(dishName, menu);
-    public void AddRangeByName(IEnumerable<string> dishNames, Menu.Core.Menu menu) => _adder.AddRangeByName(dishNames, menu);
+    // Получение общей цены заказа
+    public int GetTotalPrice(Menu menu) => _totalPriceGetter.GetTotalPrice(OrderType, menu);
 }
-

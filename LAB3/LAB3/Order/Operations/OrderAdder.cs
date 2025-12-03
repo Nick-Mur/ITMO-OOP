@@ -2,22 +2,28 @@
 using Objects;
 using LAB3.Menu.Core;
 
-public class OrderAdder(List<string> items)
+public class OrderAdder(Dictionary<string, int> items)
 {
-    private readonly List<string> _items = items;
+    private readonly Dictionary<string, int> _items = items;
     
-    public void AddByName(string dishName, Menu menu)
+    public void AddByName(string dishName, Menu menu, int quantity = 1)
     {
+        if (quantity <= 0)
+            throw new ArgumentException("Количество должно быть больше нуля.", nameof(quantity));
+
         Dish? dish = menu.GetDishByName(dishName);
         if (dish == null)
             throw new InvalidOperationException($"Блюдо '{dishName}' не найдено в меню.");
 
-        _items.Add(dishName);
+        if (_items.ContainsKey(dishName))
+            _items[dishName] += quantity;
+        else
+            _items[dishName] = quantity;
     }
 
-    public void AddRangeByName(IEnumerable<string> dishNames, Menu menu)
+    public void AddRangeByName(IEnumerable<string> dishNames, Menu menu, int quantity = 1)
     {
         foreach (var dishName in dishNames)
-            AddByName(dishName, menu);
+            AddByName(dishName, menu, quantity);
     }
 }

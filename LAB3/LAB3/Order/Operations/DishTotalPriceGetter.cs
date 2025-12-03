@@ -2,23 +2,26 @@
 using Objects;
 using LAB3.Menu.Core;
 
-
-
-public class OrderTotalPriceGetter(List<string> items)
+public class OrderTotalPriceGetter(Dictionary<string, int> items)
 {
-    private readonly List<string> _items = items;
+    private readonly Dictionary<string, int> _items = items;
     
     public int GetTotalPrice(string orderType, Menu menu)
     {
         int totalPrice = 0;
-        foreach (var dishName in _items)
+        
+        foreach (var (dishName, quantity) in _items)
         {
-            Dish dish = menu.GetDishByName(dishName);
-            totalPrice += dish.Price;
+            Dish? dish = menu.GetDishByName(dishName);
+            if (dish == null)
+                throw new InvalidOperationException($"Блюдо '{dishName}' не найдено в меню.");
+            
+            totalPrice += dish.Price * quantity;
         }
 
         if (orderType == "Fast") 
             return totalPrice + 100;
+        
         return totalPrice;
     }
 }
