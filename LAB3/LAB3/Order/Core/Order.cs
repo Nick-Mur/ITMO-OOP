@@ -11,7 +11,7 @@ public class Order : OrderStorage
     public string OrderType { get; set; }
     public string OrderStatus {get; set;}
 
-    public Order(string orderType)
+    public Order(string orderType = "basic")
     {
         OrderType = orderType;
         OrderStatus = "Готовится";
