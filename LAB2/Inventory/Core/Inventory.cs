@@ -31,4 +31,5 @@ public class Inventory: InventoryStorage
     public void Update<T>(string itemName, string upgradeStoneName)
         where T : Item, IUpgradable =>
         _itemUpdater.Update<T>(itemName, upgradeStoneName);
+    public List<string> ViewItems() => _viewer.ViewItems();
 }
