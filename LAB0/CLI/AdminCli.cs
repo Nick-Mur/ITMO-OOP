@@ -35,8 +35,9 @@ public static class AdminCli
                         break;
 
                     case "3":
-                        vm.PickUpAllCoins(code);
-                        Console.WriteLine("Монеты забраны.");
+                        List<Coin> coins = vm.PickUpAllCoins(code);
+                        int totalCoins = coins.Sum(c => c.Nominal);
+                        Console.WriteLine($"Монеты забраны: {totalCoins}.");
                         break;
 
                     case "4":

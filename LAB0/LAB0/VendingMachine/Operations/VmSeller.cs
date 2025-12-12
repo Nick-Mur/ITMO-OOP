@@ -30,7 +30,7 @@ public class VmSeller
         
         int changeAmount = insertedSum - product.Price;
         
-        if (!_vmChangeGiver.TryReturnChange(changeAmount, out List<Coin> change)) // уже вычел монеты из хранилища
+        if (!_vmChangeGiver.TryReturnChange(changeAmount, out List<Coin> change)) // уже вычел монеты из хранилища, если дал сдачу
             throw new InvalidOperationException("Автомат не может дать сдачи.");
         
         _coins.AddRange(insertedCoins);
